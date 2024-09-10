@@ -6,4 +6,5 @@ handlers:
 
 - url: /.*
   script: auto
-  entrypoint: gunicorn api:app --bind 0.0.0.0:$PORT --worker-class uvicorn.workers.UvicornWorker
+
+entrypoint: gunicorn auth:app --bind 0.0.0.0:$PORT --worker-class uvicorn.workers.UvicornWorker

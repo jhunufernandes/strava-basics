@@ -1,75 +1,37 @@
+import typing
 import uvicorn
 
-from authlib.integrations.starlette_client import OAuth, OAuthError
-from fastapi import FastAPI, HTTPException, status
-from starlette.config import Config
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.requests import Request
+import fastapi
+import fastapi.security
 
 
-HOST = '0.0.0.0'
+HOST = "0.0.0.0"
 PORT = 8080
-SCOPE = 'activity:read_all'
-
-CLIENT_ID = 'YOUR CLIENT ID HERE'
-CLIENT_SECRET = 'YOUR CLIENT SECRET HERE'
-SESSION_SECRET = 'REPLACE WITH A PROPER SECRET OF YOUR CHOICE'
 
 
-app = FastAPI()
-
-
-# add session middleware (this is used internally by starlette to execute the authorization flow)
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET,
-                   max_age=60 * 60 * 24 * 7)  # one week, in seconds
-
-
-# configure OAuth client
-config = Config(environ={})  # you could also read the client ID and secret from a .env file
-oauth = OAuth(config)
-# oauth.register(
-#     'discord',
-#     authorize_url='https://discord.com/api/oauth2/authorize',
-#     access_token_url='https://discord.com/api/oauth2/token',
-#     scope=SCOPE,
-#     client_id=CLIENT_ID,
-#     client_secret=CLIENT_SECRET
-# )
-oauth.register(
-    'strava',
-    authorize_url='https://strava.com/oauth2/authorize',
-    access_token_url='https://strava.com/oauth2/token',
-    scope=SCOPE,
-    client_id=CLIENT_ID,
-    client_secret=CLIENT_SECRET
+oauth2_authorization_code_bearer = fastapi.security.OAuth2AuthorizationCodeBearer(
+    authorizationUrl="https://strava.com/oauth2/authorize",
+    tokenUrl="https://strava.com/oauth2/token",
 )
 
 
-@app.get('/login')
-async def get_authorization_code(request: Request):
-    """OAuth2 flow, step 1: have the user log to obtain an authorization code grant
-    """
-
-    redirect_uri = request.url_for('auth')
-    return await oauth.strava.authorize_redirect(request, redirect_uri)
-
-
-@app.get('/auth')
-async def auth(request: Request):
-    """OAuth2 flow, step 2: exchange the authorization code for access token
-    """
-
-    # exchange auth code for token
-    try:
-        token = await oauth.strava.authorize_access_token(request)
-    except OAuthError as error:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=error.error
-        )
-
-    return token
+async def get_token(
+    request: fastapi.Request,
+    oauth2_scheme: typing.Annotated[
+        fastapi.security.OAuth2AuthorizationCodeBearer,
+        fastapi.Depends(oauth2_authorization_code_bearer),
+    ],
+):
+    return await oauth2_scheme(request)
 
 
-if __name__ == '__main__':
-    uvicorn.run('auth:app', host=HOST, port=PORT, workers=1)
+app = fastapi.FastAPI()
+
+
+@app.get("/")
+async def root(token: typing.Annotated[typing.Any, fastapi.Security(get_token)]):
+    return {"token": token}
+
+
+if __name__ == "__main__":
+    uvicorn.run("auth:app", host=HOST, port=PORT, workers=1)

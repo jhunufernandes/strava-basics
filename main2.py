@@ -42,15 +42,13 @@ async def redirect(request: fastapi.Request) -> fastapi.responses.RedirectRespon
 
 @app.route('/login')
 async def login(request: fastapi.Request) -> typing.Any:
-    strava = oauth.create_client('strava')
     redirect_uri = request.url_for('auth')
-    return await strava.authorize_redirect(request, redirect_uri)
+    return await oauth.strava.authorize_redirect(request, redirect_uri)
 
 
 @app.route('/auth')
 async def auth(request: fastapi.Request) -> typing.Any:
-    strava = oauth.create_client('strava')
-    token = await strava.authorize_access_token(request)
+    token = await oauth.strava.authorize_access_token(request)
     return token
 
 

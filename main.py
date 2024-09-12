@@ -22,6 +22,12 @@ oauth.register(
     'strava',
     client_id='...',
     client_secret='...',
+    authorize_url='https://strava.com/oauth2/authorize',
+    authorization_endpoint="https://strava.com/oauth2/authorize",
+    authorizationUrl="https://strava.com/oauth2/authorize",
+    # access_token_url="https://strava.com/oauth2/token",
+    token_endpoint="https://strava.com/oauth2/token",
+    tokenUrl="https://strava.com/oauth2/token",
 )
 
 

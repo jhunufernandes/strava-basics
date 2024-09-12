@@ -1,4 +1,4 @@
-import datetime
+import typing
 
 import fastapi
 import uvicorn
@@ -13,14 +13,18 @@ app.include_router(router)
 
 
 @app.get("/")
-async def root() -> list[datetime.datetime]:
-    dummy_times = [
-        datetime.datetime(2018, 1, 1, 10, 0, 0),
-        datetime.datetime(2018, 1, 2, 10, 30, 0),
-        datetime.datetime(2018, 1, 3, 11, 0, 0),
-    ]
+async def root(request: fastapi.Request) -> dict[str, typing.Any]:
+    return dict(request.query_params.items())
 
-    return dummy_times
+
+@app.get("/redirect")
+async def redirect(request: fastapi.Request) -> fastapi.responses.RedirectResponse:
+    url = request.url_for("root")
+    redirect_url = f"{url}"
+    query_params = request.query_params
+    if query_params:
+        redirect_url += f"?{query_params}"
+    return fastapi.responses.RedirectResponse(redirect_url)
 
 
 if __name__ == "__main__":

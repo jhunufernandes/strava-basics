@@ -7,4 +7,4 @@ handlers:
 - url: /.*
   script: auto
 
-entrypoint: gunicorn oauth2:app --bind 0.0.0.0:$PORT --worker-class uvicorn.workers.UvicornWorker
+entrypoint: gunicorn main:app --bind 0.0.0.0:$PORT --worker-class uvicorn.workers.UvicornWorker

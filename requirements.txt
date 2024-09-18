@@ -1,6 +1,4 @@
-authlib
 fastapi
-flask
 gunicorn
 httpx
 uvicorn

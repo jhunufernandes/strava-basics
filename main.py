@@ -5,6 +5,7 @@ import urllib.parse
 import fastapi
 import httpx
 
+DOMAIN = os.getenv("DOMAIN", "https://localhost:8080")
 AUTHORIZE_URL = "http://www.strava.com/oauth/authorize"
 TOKEN_URL = "http://www.strava.com/oauth/token"
 CLIENT_ID = os.getenv("CLIENT_ID", "123")
